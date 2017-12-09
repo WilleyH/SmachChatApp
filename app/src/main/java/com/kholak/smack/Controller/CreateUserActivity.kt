@@ -8,6 +8,7 @@ import com.kholak.smack.R
 import com.kholak.smack.Services.AuthService
 import kotlinx.android.synthetic.main.activity_create_user.*
 import java.util.*
+import java.util.jar.Attributes
 
 class CreateUserActivity : AppCompatActivity() {
 
@@ -50,13 +51,20 @@ class CreateUserActivity : AppCompatActivity() {
         }
 
         fun createCreateUserBtnClicked(view: View) {
+
+            val userName = createUserNameText.text.toString()
             val email = createEmailText.text.toString()
             val password = createPasswordText.text.toString()
+
             AuthService.registerUser(this, email, password) { registerSuccess ->
                 if(registerSuccess) {
                     AuthService.loginUser(this, email, password) { loginSuccess ->
                         if(loginSuccess)
-
+                        AuthService.createUser(this, userName, email, userAvatar, avatarColour) {
+                            createSuccess -> if (createSuccess) {
+                                finish()
+                            }
+                        }
                     }
                 }
 
