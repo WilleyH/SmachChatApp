@@ -22,7 +22,6 @@ object AuthService {
     var authToken = ""
 
     fun registerUser(context: Context, email: String, password: String, complete: (Boolean) -> Unit) {
-        val url = URL_REGISTER
 
         val jsonBody = JSONObject()
         jsonBody.put("email", email)
@@ -37,7 +36,7 @@ object AuthService {
             complete(false)
         }) {
             override fun getBodyContentType(): String {
-                return "application/json; character=utf-8"
+                return "application/json; charset=utf-8"
                 }
 
             override fun getBody(): ByteArray {
@@ -74,7 +73,7 @@ object AuthService {
                 complete(false)
             }) {
                 override fun getBodyContentType(): String {
-                    return "application/json; character=utf-8"
+                    return "application/json; charset=utf-8"
                 }
 
                 override fun getBody(): ByteArray {
@@ -85,7 +84,7 @@ object AuthService {
             Volley.newRequestQueue(context).add(loginRequest)
         }
 
-    fun createUser(context: Context, name: String, email: String, avatarColor: String, avatarName: String, complete: (Boolean) -> Unit) {
+    fun createUser(context: Context, name: String, email: String, avatarName: String, avatarColor: String, complete: (Boolean) -> Unit) {
         val jsonBody = JSONObject()
         jsonBody.put("name", name)
         jsonBody.put("email", email)
@@ -97,8 +96,8 @@ object AuthService {
             try {
                 UserDataService.name = response.getString("name")
                 UserDataService.email = response.getString("email")
-                UserDataService.avatarColor = response.getString("avatarColor")
                 UserDataService.avatarName = response.getString("avatarName")
+                UserDataService.avatarColor = response.getString("avatarColor")
                 UserDataService.id = response.getString("_id")
                 complete(true)
             } catch (e: JSONException) {
@@ -112,7 +111,7 @@ object AuthService {
             complete(false)
         }) {
             override fun getBodyContentType(): String {
-                return "application/json; character=utf-8"
+                return "application/json; charset=utf-8"
             }
 
             override fun getBody(): ByteArray {

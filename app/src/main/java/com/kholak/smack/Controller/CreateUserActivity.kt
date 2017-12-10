@@ -1,23 +1,27 @@
 package com.kholak.smack.Controller
 
+import android.content.Intent
 import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v4.content.LocalBroadcastManager
 import android.view.View
+import android.widget.Toast
 import com.kholak.smack.R
 import com.kholak.smack.Services.AuthService
+import com.kholak.smack.Utilities.BROADCAST_USER_DATA_CHANGE
 import kotlinx.android.synthetic.main.activity_create_user.*
 import java.util.*
-import java.util.jar.Attributes
 
 class CreateUserActivity : AppCompatActivity() {
 
     var userAvatar = "profileDefault"
-    var avatarColour = "[0.5, 0.5, 0.5, 1]"
+    var avatarColor = "[0.5, 0.5, 0.5, 1]"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_user)
+        createSpinner.visibility = View.INVISIBLE
     }
 
         fun generateUserAvatar(view: View) {
@@ -35,7 +39,7 @@ class CreateUserActivity : AppCompatActivity() {
             createAvatarImageView.setImageResource(resourceId)
         }
 
-        fun createBackgroundColourBtnClicked(view: View) {
+        fun createBackgroundColorBtnClicked(view: View) {
             val random = Random()
             val r = random.nextInt(255)
             val g = random.nextInt(255)
@@ -47,27 +51,53 @@ class CreateUserActivity : AppCompatActivity() {
             val savedG = g.toDouble() / 255
             val savedB = b.toDouble() / 255
 
-            avatarColour = "[$savedR, $savedG, $savedB, 1]"
+            avatarColor = "[$savedR, $savedG, $savedB, 1]"
         }
 
         fun createCreateUserBtnClicked(view: View) {
-
+            enableSpinner(true)
             val userName = createUserNameText.text.toString()
             val email = createEmailText.text.toString()
             val password = createPasswordText.text.toString()
 
-            AuthService.registerUser(this, email, password) { registerSuccess ->
-                if(registerSuccess) {
-                    AuthService.loginUser(this, email, password) { loginSuccess ->
-                        if(loginSuccess)
-                        AuthService.createUser(this, userName, email, userAvatar, avatarColour) {
-                            createSuccess -> if (createSuccess) {
-                                finish()
-                            }
-                        }
-                    }
-                }
+            if (userName.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty()) {
+                AuthService.registerUser(this, email, password) { registerSuccess ->
+                    if(registerSuccess) {
+                        AuthService.loginUser(this, email, password) { loginSuccess ->
+                            if(loginSuccess) {
+                                AuthService.createUser(this, userName, email, userAvatar, avatarColor) { createSuccess ->
+                                    if (createSuccess) {
 
+                                        val userDataChange = Intent(BROADCAST_USER_DATA_CHANGE)
+                                        LocalBroadcastManager.getInstance(this).sendBroadcast(userDataChange)
+
+                                        enableSpinner(false)
+                                        finish()
+                                    } else { errorToast() }
+                                }
+                            } else { errorToast() }
+                        }
+                    } else { errorToast() }
+              }
+            } else {
+                Toast.makeText(this, "Make sure user name, password, and email are filled in.", Toast.LENGTH_LONG).show()
+                enableSpinner(false)
             }
         }
+
+    fun errorToast() {
+        Toast.makeText(this, "Something went wrong, please try again", Toast.LENGTH_LONG).show()
+        enableSpinner(false)
+    }
+
+    fun enableSpinner(enable: Boolean) {
+        if (enable) {
+            createSpinner.visibility = View.VISIBLE
+        } else {
+            createSpinner.visibility = View.INVISIBLE
+        }
+        createCreateUserBtn.isEnabled = !enable
+        createAvatarImageView.isEnabled = !enable
+        createBackgroundColorBtn.isEnabled = !enable
+    }
 }
